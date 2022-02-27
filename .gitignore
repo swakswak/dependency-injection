@@ -168,4 +168,8 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# intellij iml file
+*.iml
+
 # End of https://www.toptal.com/developers/gitignore/api/intellij,macos,java
+
