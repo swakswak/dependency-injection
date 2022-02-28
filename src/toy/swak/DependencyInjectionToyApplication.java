@@ -1,5 +1,7 @@
 package toy.swak;
 
+import toy.swak.support.PackageScanner;
+
 public class DependencyInjectionToyApplication {
     private static final String BASE_PACKAGE = "toy.swak";
 
