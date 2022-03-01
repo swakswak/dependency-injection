@@ -1,6 +1,6 @@
 package toy.swak.service.memory;
 
-import toy.swak.annotations.Component;
+import toy.swak.component.Component;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

@@ -1,4 +1,4 @@
-package toy.swak.annotations;
+package toy.swak.component;
 
 import java.lang.annotation.*;
 
@@ -8,5 +8,4 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Component {
-
 }
