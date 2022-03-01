@@ -1,72 +1,97 @@
 package toy.swak.dependency.injector;
 
 import toy.swak.component.Component;
+import toy.swak.exceptions.CircularReferenceException;
 import toy.swak.scanner.Package;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.util.*;
 
 /**
  * @author hyoseok choi (hschoi0702@gmail.com)
  **/
 public class DependencyInjector {
-    private final String topPackage;
-    private final String componentName;
-    private final Map<Class<?>, Set<Class<?>>> dependencyMap;
-    private final Stack<Class<?>> dependencyStack;
+    private final ReferenceGraph referenceGraph;
 
-    public DependencyInjector(String topPackage) {
-        this.topPackage = topPackage;
-        this.componentName = Component.class.getName();
-        this.dependencyMap = new HashMap<>();
-        this.dependencyStack = new Stack<>();
+    public DependencyInjector() {
+        this.referenceGraph = new ReferenceGraph();
     }
 
+    // TODO: STUB -> 구현
     public void injectDependency(Package pkg) {
-        this.scanAndAddKeyToDependencyMap(pkg);
+        this.fillReferences(pkg);
+        this.fillReferencesOfReferences();
 
-        for (Class<?> component : dependencyMap.keySet()) {
-            for (Field field : component.getDeclaredFields()) {
-                if (dependencyMap.containsKey(field.getType())) {
-                    dependencyMap.get(component).add(field.getType());
-                }
-            }
+        if (referenceGraph.hasCycle()) {
+            throw new CircularReferenceException();
         }
-        this.checkCircularReference();
-        System.out.println(dependencyMap);
+
+        for (Reference reference : referenceGraph.getReferences()) {
+
+        }
 
     }
 
-    private void checkCircularReference() {
-        Set<String> components = new LinkedHashSet<>();
-
-        for (Map.Entry<Class<?>, Set<Class<?>>> entry : dependencyMap.entrySet()) {
-            components.add(entry.getKey().getName());
-            for (Class<?> dependency : entry.getValue()) {
-                components.contains(dependency);
-
-                if (this.isComponentAnnotationPresent(dependency)) {
-
-                }
-            }
+    // TODO: STUB -> 구현
+    private void newInstance(Iterable<Reference> references) {
+        for (Reference reference : references) {
+            this.newInstance(reference.getAdjacencyList());
+            Class<?> aClass = this.toClass(reference);
         }
     }
 
-    private void scanAndAddKeyToDependencyMap(Package pkg) {
+    private void fillReferencesOfReferences() {
+        for (Reference reference : referenceGraph.getReferences()) {
+            Class<?> aClass = this.toClass(reference);
+            this.connectReferences(aClass, aClass.getDeclaredFields());
+        }
+    }
+
+    private void connectReferences(Class<?> component, Field[] dependencies) {
+        for (Field child : dependencies) {
+            checkAndAdd(component, child);
+        }
+    }
+
+    private void checkAndAdd(Class<?> component, Field child) {
+        if (this.isComponentAnnotationPresent(child.getType())) {
+            if (referenceGraph.contains(component.getName())) {
+                Reference reference = referenceGraph.get(component.getName());
+                if (reference.contains(child.getType().getName())) {
+                    return;
+                }
+
+                referenceGraph.addEdge(
+                        referenceGraph.get(component.getName()),
+                        referenceGraph.contains(child.getType().getName()) ?
+                                referenceGraph.get(child.getType().getName())
+                                : Reference.of(child.getType().getName())
+                );
+            }
+
+            this.connectReferences(child.getType(), child.getType().getDeclaredFields());
+        }
+    }
+
+    private Class<?> toClass(Reference reference) {
+        try {
+            return Class.forName(reference.getFullName());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("Class not found: " + reference.getFullName());
+        }
+    }
+
+    private void fillReferences(Package pkg) {
         pkg.getClasses().stream()
                 .filter(this::isComponentAnnotationPresent)
-                .forEach(aClass -> dependencyMap.put(aClass, new HashSet<>()));
+                .forEach(aClass -> referenceGraph.addReference(Reference.of(aClass.getName())));
 
         for (Package subPackage : pkg.getSubPackages()) {
-            this.scanAndAddKeyToDependencyMap(subPackage);
+            this.fillReferences(subPackage);
         }
     }
 
     private boolean isComponentAnnotationPresent(Class<?> aClass) {
         return aClass.isAnnotationPresent(Component.class);
     }
-
-//    private boolean isComponent(Class<?> aClass) {
-//        return Component.class.getSimpleName().equals(aClass.getSimpleName());
-//    }
 }

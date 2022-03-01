@@ -11,19 +11,18 @@ public class DependencyInjectionToyApplication {
         PackageScanner packageScanner = PackageScanner.getInstance();
         Package scanned = packageScanner.scan(TOP_PACKAGE);
 
-        DependencyInjector dependencyInjector = new DependencyInjector(TOP_PACKAGE);
+        DependencyInjector dependencyInjector = new DependencyInjector();
         dependencyInjector.injectDependency(scanned);
-//        print(scanned, "");
     }
 
-    public static void print(Package scanned, String parent) {
-        System.out.println(parent + "." + scanned.getName());
-        for (Class<?> aClass : scanned.getClasses()) {
-            System.out.println("\t" + aClass);
-        }
-        for (Package subPackage : scanned.getSubPackages()) {
-            print(subPackage, parent + "." + scanned.getName());
-        }
-
-    }
+//    public static void print(Package scanned, String parent) {
+//        System.out.println(parent + "." + scanned.getName());
+//        for (Class<?> aClass : scanned.getClasses()) {
+//            System.out.println("\t" + aClass);
+//        }
+//        for (Package subPackage : scanned.getSubPackages()) {
+//            print(subPackage, parent + "." + scanned.getName());
+//        }
+//
+//    }
 }
