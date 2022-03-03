@@ -4,17 +4,21 @@ import toy.swak.component.Component;
 import toy.swak.exceptions.CircularReferenceException;
 import toy.swak.scanner.Package;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author hyoseok choi (hschoi0702@gmail.com)
  **/
 public class DependencyInjector {
     private final ReferenceGraph referenceGraph;
+    private final Map<String, Object> dependencyMap;
 
     public DependencyInjector() {
         this.referenceGraph = new ReferenceGraph();
+        this.dependencyMap = new ConcurrentHashMap<>();
     }
 
     // TODO: STUB -> 구현
@@ -30,13 +34,42 @@ public class DependencyInjector {
 
         }
 
+        this.newInstance(referenceGraph.getReferences());
     }
 
     // TODO: STUB -> 구현
     private void newInstance(Iterable<Reference> references) {
         for (Reference reference : references) {
-            this.newInstance(reference.getAdjacencyList());
+
             Class<?> aClass = this.toClass(reference);
+
+            if (reference.getAdjacencyList().isEmpty()) {
+                try {
+                    Object created = aClass.getDeclaredConstructor().newInstance();
+                    dependencyMap.put(reference.getFullName(), created);
+                } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                this.newInstance(reference.getAdjacencyList());
+
+                try {
+                    Object created = aClass.getDeclaredConstructor().newInstance();
+                    dependencyMap.put(reference.getFullName(), created);
+                } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            try {
+                for (Reference reference1 : reference.getAdjacencyList()) {
+
+                    aClass.getDeclaredConstructor().newInstance();
+                }
+
+            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
     }
 

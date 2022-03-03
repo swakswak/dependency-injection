@@ -11,10 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class EmployeeMemoryRepository implements EmployeeRepository<Employee, Long>{
     private final Map<Long, Employee> memoryDatabase;
-    private final EmployeeMemoryService employeeMemoryService;
 
-    public EmployeeMemoryRepository(EmployeeMemoryService employeeMemoryService) {
-        this.employeeMemoryService = employeeMemoryService;
+    public EmployeeMemoryRepository() {
         this.memoryDatabase = new ConcurrentHashMap<>();
     }
 

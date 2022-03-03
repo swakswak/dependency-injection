@@ -45,7 +45,7 @@ public class Reference {
         this.beingVisited = beingVisited;
     }
 
-    public Iterable<Reference> getAdjacencyList() {
+    public List<Reference> getAdjacencyList() {
         return adjacencyList;
     }
 
