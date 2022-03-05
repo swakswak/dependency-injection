@@ -5,23 +5,21 @@ import toy.swak.exceptions.CircularReferenceException;
 import toy.swak.scanner.Package;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author hyoseok choi (hschoi0702@gmail.com)
  **/
 public class DependencyInjector {
     private final ReferenceGraph referenceGraph;
-    private final Map<String, Object> dependencyMap;
+    private final InstanceCreator instanceCreator;
+    private final ReferenceConverter referenceConverter;
 
     public DependencyInjector() {
+        this.instanceCreator = new InstanceCreator();
         this.referenceGraph = new ReferenceGraph();
-        this.dependencyMap = new ConcurrentHashMap<>();
+        this.referenceConverter = ReferenceConverter.getInstance();
     }
 
-    // TODO: STUB -> 구현
     public void injectDependency(Package pkg) {
         this.fillReferences(pkg);
         this.fillReferencesOfReferences();
@@ -29,53 +27,14 @@ public class DependencyInjector {
         if (referenceGraph.hasCycle()) {
             throw new CircularReferenceException();
         }
-
-        for (Reference reference : referenceGraph.getReferences()) {
-
-        }
-
-        this.newInstance(referenceGraph.getReferences());
+        instanceCreator.createInstances(referenceGraph.getReferences());
+        System.out.println(ComponentPool.getInstance());
     }
 
-    // TODO: STUB -> 구현
-    private void newInstance(Iterable<Reference> references) {
-        for (Reference reference : references) {
-
-            Class<?> aClass = this.toClass(reference);
-
-            if (reference.getAdjacencyList().isEmpty()) {
-                try {
-                    Object created = aClass.getDeclaredConstructor().newInstance();
-                    dependencyMap.put(reference.getFullName(), created);
-                } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                this.newInstance(reference.getAdjacencyList());
-
-                try {
-                    Object created = aClass.getDeclaredConstructor().newInstance();
-                    dependencyMap.put(reference.getFullName(), created);
-                } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            try {
-                for (Reference reference1 : reference.getAdjacencyList()) {
-
-                    aClass.getDeclaredConstructor().newInstance();
-                }
-
-            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     private void fillReferencesOfReferences() {
         for (Reference reference : referenceGraph.getReferences()) {
-            Class<?> aClass = this.toClass(reference);
+            Class<?> aClass = referenceConverter.toClass(reference);
             this.connectReferences(aClass, aClass.getDeclaredFields());
         }
     }
@@ -86,32 +45,23 @@ public class DependencyInjector {
         }
     }
 
-    private void checkAndAdd(Class<?> component, Field child) {
-        if (this.isComponentAnnotationPresent(child.getType())) {
-            if (referenceGraph.contains(component.getName())) {
-                Reference reference = referenceGraph.get(component.getName());
-                if (reference.contains(child.getType().getName())) {
-                    return;
-                }
+    private void checkAndAdd(Class<?> component, Field childField) {
+        Class<?> child = childField.getType();
 
-                referenceGraph.addEdge(
-                        referenceGraph.get(component.getName()),
-                        referenceGraph.contains(child.getType().getName()) ?
-                                referenceGraph.get(child.getType().getName())
-                                : Reference.of(child.getType().getName())
-                );
-            }
+        if (this.isComponentAnnotationPresent(child)) {
+//            if (referenceGraph.contains(component.getName())) {
+//                if (isExistsChildInGraph(component, child)) return;
 
-            this.connectReferences(child.getType(), child.getType().getDeclaredFields());
+            referenceGraph.addEdgeIfExists(referenceGraph.get(component.getName()), referenceGraph.getOrNew(child.getName()));
+//            }
+
+            this.connectReferences(child, child.getDeclaredFields());
         }
     }
 
-    private Class<?> toClass(Reference reference) {
-        try {
-            return Class.forName(reference.getFullName());
-        } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException("Class not found: " + reference.getFullName());
-        }
+    private boolean isExistsChildInGraph(Class<?> parent, Class<?> child) {
+        Reference reference = referenceGraph.get(parent.getName());
+        return reference.contains(child.getName());
     }
 
     private void fillReferences(Package pkg) {

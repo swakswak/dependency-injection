@@ -8,9 +8,9 @@ import toy.swak.service.EmployeeService;
  **/
 @Component
 public class EmployeeMemoryService implements EmployeeService {
-    private final EmployeeMemoryRepository employeeMemoryRepository;
+    private final EmployeeMemoryRepository employeeRepository;
 
-    public EmployeeMemoryService(EmployeeMemoryRepository employeeMemoryRepository) {
-        this.employeeMemoryRepository = employeeMemoryRepository;
+    EmployeeMemoryService(EmployeeMemoryRepository employeeRepository) {
+        this.employeeRepository = employeeRepository;
     }
 }

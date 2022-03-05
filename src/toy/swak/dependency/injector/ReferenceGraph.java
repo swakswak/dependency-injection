@@ -1,6 +1,9 @@
 package toy.swak.dependency.injector;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author hyoseok choi (hschoi0702@gmail.com)
@@ -8,7 +11,7 @@ import java.util.*;
 class ReferenceGraph {
     private final Map<String, Reference> references;
 
-    public ReferenceGraph() {
+    ReferenceGraph() {
         this.references = new HashMap<>();
     }
 
@@ -16,7 +19,13 @@ class ReferenceGraph {
         this.references.put(reference.getFullName(), reference);
     }
 
-    public void addEdge(Reference from, Reference to) {
+    public void addEdgeIfExists(Reference from, Reference to) {
+        if (this.contains(from.getFullName()) && this.contains(to.getFullName())) {
+            this.addEdge(from, to);
+        }
+    }
+
+    private void addEdge(Reference from, Reference to) {
         if (references.containsKey(from.getFullName())) {
             references.get(from.getFullName()).addNeighbor(to);
         }
@@ -41,6 +50,22 @@ class ReferenceGraph {
         return false;
     }
 
+    public Reference getOrNew(String childName) {
+        return this.contains(childName) ? this.get(childName) : Reference.of(childName);
+    }
+
+    public Reference get(String name) {
+        if (!references.containsKey(name)) {
+            throw new IllegalArgumentException(name);
+        }
+
+        return references.get(name);
+    }
+
+    public boolean contains(String name) {
+        return references.containsKey(name);
+    }
+
     private boolean hasCycle(Reference reference) {
         reference.setBeingVisited(true);
 
@@ -63,17 +88,5 @@ class ReferenceGraph {
         return "ReferenceGraph{" +
                 "references=" + references +
                 '}';
-    }
-
-    public Reference get(String name) {
-        if (!references.containsKey(name)) {
-            throw new IllegalArgumentException(name);
-        }
-
-        return references.get(name);
-    }
-
-    public boolean contains(String name) {
-        return references.containsKey(name);
     }
 }

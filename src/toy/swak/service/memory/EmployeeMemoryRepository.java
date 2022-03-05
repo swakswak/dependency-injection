@@ -9,10 +9,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author hyoseok choi (hschoi0702@gmail.com)
  **/
 @Component
-public class EmployeeMemoryRepository implements EmployeeRepository<Employee, Long>{
+public class EmployeeMemoryRepository implements EmployeeRepository{
     private final Map<Long, Employee> memoryDatabase;
 
-    public EmployeeMemoryRepository() {
+    EmployeeMemoryRepository() {
         this.memoryDatabase = new ConcurrentHashMap<>();
     }
 

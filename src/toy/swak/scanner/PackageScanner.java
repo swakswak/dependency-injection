@@ -30,7 +30,7 @@ public class PackageScanner {
              BufferedReader bufferedReader = new BufferedReader(reader);
         ) {
             Stream<String> lines = bufferedReader.lines();
-            Package extracted = extractCurrentPackage(packagePath);
+            Package extracted = this.extractCurrentPackage(packagePath);
             lines.forEach(line -> {
                 if (this.isClass(line)) {
                     extracted.addClass(this.toClass(packagePath, line));
@@ -59,7 +59,6 @@ public class PackageScanner {
     private Class<?> toClass(String packagePath, String line) {
         try {
             String className = line.replace(".class", "");
-
             return Class.forName(packagePath + "." + className);
         } catch (ClassNotFoundException e) {
             throw new IllegalArgumentException("packagePath=" + packagePath + ", line=" + line);
