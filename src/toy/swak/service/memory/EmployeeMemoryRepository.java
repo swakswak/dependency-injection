@@ -14,6 +14,7 @@ public class EmployeeMemoryRepository implements EmployeeRepository{
 
     EmployeeMemoryRepository() {
         this.memoryDatabase = new ConcurrentHashMap<>();
+        System.out.println("[EmployeeMemoryRepository]");
     }
 
     @Override

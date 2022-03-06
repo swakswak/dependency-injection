@@ -12,5 +12,6 @@ public class EmployeeMemoryService implements EmployeeService {
 
     EmployeeMemoryService(EmployeeMemoryRepository employeeRepository) {
         this.employeeRepository = employeeRepository;
+        System.out.println("[EmployeeMemoryService] employeeRepository=" + employeeRepository);
     }
 }
