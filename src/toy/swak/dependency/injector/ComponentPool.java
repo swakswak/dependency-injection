@@ -31,6 +31,10 @@ class ComponentPool {
         dependencyMap.put(key, value);
     }
 
+    public boolean containsKey(String key) {
+        return dependencyMap.containsKey(key);
+    }
+
     @Override
     public String toString() {
         List<String> keyValueSimpleStrings = new LinkedList<>();

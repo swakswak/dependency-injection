@@ -23,12 +23,16 @@ class InstanceCreator {
     void createInstances(Iterable<Reference> references) {
         for (Reference reference : references) {
             this.createInstances(reference.getAdjacencyList());
-            List<Object> dependencies = this.getDependencies(reference);
 
             Class<?> aClass = referenceConverter.toClass(reference);
             this.validateComponentConstructorConstraint(aClass);
             Constructor<?> constructor = aClass.getDeclaredConstructors()[0];
 
+            if (componentPool.containsKey(constructor.getName())) {
+                continue;
+            }
+
+            List<Object> dependencies = this.getDependencies(reference);
             this.createInstance(constructor, dependencies);
         }
     }
@@ -48,6 +52,7 @@ class InstanceCreator {
     }
 
     private void createInstance(Constructor<?> constructor, List<Object> dependencies) {
+
         try {
             constructor.setAccessible(true);
             Object created = null;
