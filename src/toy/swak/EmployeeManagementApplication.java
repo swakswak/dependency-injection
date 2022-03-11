@@ -1,5 +1,6 @@
 package toy.swak;
 
+import toy.swak.dependency.injector.ConstructorDependencyInjector;
 import toy.swak.dependency.injector.DependencyInjector;
 import toy.swak.scanner.Package;
 import toy.swak.scanner.PackageScanner;
@@ -11,7 +12,7 @@ public class EmployeeManagementApplication {
         PackageScanner packageScanner = PackageScanner.getInstance();
         Package scanned = packageScanner.scan(TOP_PACKAGE);
 
-        DependencyInjector dependencyInjector = new DependencyInjector();
+        DependencyInjector dependencyInjector = new ConstructorDependencyInjector();
         dependencyInjector.injectDependency(scanned);
     }
 }
